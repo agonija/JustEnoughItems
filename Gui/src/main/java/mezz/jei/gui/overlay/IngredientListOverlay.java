@@ -43,6 +43,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	private final IIngredientListOverlayContents contents;
 	private final LookupHistoryOverlay lookupHistoryOverlay;
 	private final IClientToggleState toggleState;
+	private final IFilterTextSource filterTextSource;
 	private final GuiTextFieldFilter searchField;
 	private final IngredientListOverlayController controller;
 	private boolean screenPropertiesDirty;
@@ -65,6 +66,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 		this.contents = contents;
 		this.lookupHistoryOverlay = lookupHistoryOverlay;
 		this.toggleState = toggleState;
+		this.filterTextSource = filterTextSource;
 
 		this.searchField = new GuiTextFieldFilter(contents::isEmpty);
 		this.configButton = new IconButton(new ConfigButtonController(this::isListDisplayed, toggleState, keyBindings));
@@ -96,6 +98,15 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	public boolean isListDisplayed() {
 		updateScreenPropertiesIfDirty();
 		return this.controller.isListDisplayed();
+	}
+
+	/** The ingredient grid is only shown while something is typed into the search bar. */
+	private boolean isGridShown() {
+		if (!isListDisplayed()) {
+			return false;
+		}
+		String filterText = this.filterTextSource.getFilterText();
+		return filterText != null && !filterText.isBlank();
 	}
 
 	private void markScreenPropertiesDirty() {
@@ -133,6 +144,8 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	public void drawBackground(GuiGraphics guiGraphics) {
 		if (isListDisplayed()) {
 			this.searchField.drawBackground(guiGraphics);
+		}
+		if (isGridShown()) {
 			this.contents.drawBackground(guiGraphics);
 		}
 		if (this.controller.hasValidScreen() && toggleState.isOverlayEnabled()) {
@@ -143,6 +156,8 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	public void drawForeground(Minecraft minecraft, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		if (isListDisplayed()) {
 			this.searchField.drawForeground(guiGraphics, mouseX, mouseY, partialTicks);
+		}
+		if (isGridShown()) {
 			this.contents.drawForeground(minecraft, guiGraphics, mouseX, mouseY, partialTicks);
 		}
 		if (this.controller.hasValidScreen()) {
@@ -155,7 +170,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 
 	public void drawTooltips(Minecraft minecraft, GuiGraphics guiGraphics, int mouseX, int mouseY) {
 		updateScreenPropertiesIfDirty();
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			this.contents.drawTooltips(minecraft, guiGraphics, mouseX, mouseY);
 		}
 		if (this.controller.hasValidScreen()) {
@@ -167,7 +182,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 
 	public void drawOnForeground(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 		updateScreenPropertiesIfDirty();
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			this.contents.drawOnForeground(guiGraphics, mouseX, mouseY);
 		}
 		this.lookupHistoryOverlay.drawOnForeground(guiGraphics, mouseX, mouseY);
@@ -175,7 +190,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 
 	public void tick() {
 		this.configButton.tick();
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			this.contents.tick();
 		}
 		if (this.controller.hasValidScreen() && toggleState.isOverlayEnabled()) {
@@ -186,7 +201,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	@Override
 	public Stream<IClickableIngredientInternal<?>> getIngredientUnderMouse(double mouseX, double mouseY) {
 		updateScreenPropertiesIfDirty();
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			return Stream.concat(this.contents.getIngredientUnderMouse(mouseX, mouseY), this.lookupHistoryOverlay.getIngredientUnderMouse(mouseX, mouseY));
 		}
 		if (this.lookupHistoryOverlay.isListDisplayed()) {
@@ -198,7 +213,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	@Override
 	public Stream<IDraggableIngredientInternal<?>> getDraggableIngredientUnderMouse(double mouseX, double mouseY) {
 		updateScreenPropertiesIfDirty();
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			return Stream.concat(this.contents.getDraggableIngredientUnderMouse(mouseX, mouseY), this.lookupHistoryOverlay.getDraggableIngredientUnderMouse(mouseX, mouseY));
 		}
 		if (this.lookupHistoryOverlay.isListDisplayed()) {
@@ -208,17 +223,20 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	}
 
 	public IUserInputHandler createInputHandler() {
+		final IUserInputHandler searchInputHandler = this.searchField.createInputHandler();
 		final IUserInputHandler displayedInputHandler = new CombinedInputHandler(
 			"IngredientListOverlay",
-			this.searchField.createInputHandler(),
+			searchInputHandler,
 			this.contents.createInputHandler()
 		);
 
-		final IUserInputHandler configButtonInputHandler = this.configButton.createInputHandler();
 
 		return new ProxyInputHandler(() -> {
-			if (isListDisplayed()) {
+			if (isGridShown()) {
 				return displayedInputHandler;
+			}
+			if (isListDisplayed()) {
+				return searchInputHandler;
 			}
 			return NullInputHandler.INSTANCE;
 		});
@@ -228,7 +246,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 		final IUserInputHandler deleteItemInputHandler = this.contents.createDeleteItemInputHandler();
 
 		return new ProxyInputHandler(() -> {
-			if (isListDisplayed()) {
+			if (isGridShown()) {
 				return deleteItemInputHandler;
 			}
 			return NullInputHandler.INSTANCE;
@@ -242,7 +260,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 		);
 
 		return new ProxyDragHandler(() -> {
-			if (isListDisplayed()) {
+			if (isGridShown()) {
 				return combinedDragHandlers;
 			}
 			return NullDragHandler.INSTANCE;
@@ -261,7 +279,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 
 	@Override
 	public Optional<ITypedIngredient<?>> getIngredientUnderMouse() {
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			double mouseX = MouseUtil.getX();
 			double mouseY = MouseUtil.getY();
 			return this.contents.getIngredientUnderMouse(mouseX, mouseY)
@@ -274,7 +292,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	@Nullable
 	@Override
 	public <T> T getIngredientUnderMouse(IIngredientType<T> ingredientType) {
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			double mouseX = MouseUtil.getX();
 			double mouseY = MouseUtil.getY();
 			return this.contents.getIngredientUnderMouse(mouseX, mouseY)
@@ -290,7 +308,7 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 	@Override
 	public <T> List<T> getVisibleIngredients(IIngredientType<T> ingredientType) {
 		updateScreenPropertiesIfDirty();
-		if (isListDisplayed()) {
+		if (isGridShown()) {
 			return this.contents.getVisibleIngredients(ingredientType)
 				.toList();
 		}
