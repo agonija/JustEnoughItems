@@ -1,0 +1,52 @@
+name: 'Build Jar (no bookmarks/history/config button)'
+
+on:
+  push:
+    branches:
+      - 'no-bookmarks'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Jars
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDKs 21 and 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: |
+            21
+            25
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+
+      - name: Build jars (without tests)
+        run: ./gradlew :NeoForge:assemble :Forge:assemble :Fabric:assemble -x test
+
+      - name: Collect jars
+        shell: bash
+        run: |
+          mkdir dist
+          cp NeoForge/build/libs/*.jar dist
+          cp Forge/build/libs/*.jar dist
+          cp Fabric/build/libs/*.jar dist
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jei-jars
+          if-no-files-found: error
+          path: dist/*

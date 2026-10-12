@@ -44,7 +44,7 @@ public class RecipeOptionButtons {
 			onValueChanged
 		));
 
-		buttons = List.of(bookmarksFirstButton, craftableFirstButton);
+		buttons = List.of(craftableFirstButton);
 		backgroundTab = textures.getRecipeOptionsTab();
 	}
 

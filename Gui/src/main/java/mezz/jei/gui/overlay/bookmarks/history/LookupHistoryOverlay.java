@@ -98,7 +98,7 @@ public class LookupHistoryOverlay implements IRecipeFocusSource, ILookupHistoryO
 
 	public boolean isListDisplayed() {
 		updateLayoutIfDirty();
-		return clientConfig.lookupHistoryEnabled().get() &&
+		return false &&
 			isDisplayedOnThisSide() &&
 			contents.hasRoom();
 	}

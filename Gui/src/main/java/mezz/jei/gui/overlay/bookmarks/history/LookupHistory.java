@@ -52,6 +52,7 @@ public class LookupHistory implements IIngredientGridSource {
 	}
 
 	public void add(IBookmark element) {
+		if (true) return; // history disabled
 		elements.remove(element);
 		elements.addFirst(element);
 		if (elements.size() > maxElements.get()) {

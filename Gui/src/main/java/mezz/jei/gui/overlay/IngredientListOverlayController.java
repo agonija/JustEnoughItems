@@ -66,7 +66,7 @@ class IngredientListOverlayController {
 
 			@Override
 			public boolean isLookupHistoryEnabled() {
-				return clientConfig.lookupHistoryEnabled().get();
+				return false;
 			}
 		};
 	}

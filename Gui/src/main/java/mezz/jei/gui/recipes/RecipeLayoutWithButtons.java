@@ -44,7 +44,6 @@ public final class RecipeLayoutWithButtons<R> implements IRecipeLayoutWithButton
 
 		List<IconButton> buttons = new ArrayList<>();
 		buttons.add(new IconButton(transferButton));
-		buttons.add(new IconButton(bookmarkButton));
 		for (IRecipeButtonControllerFactory buttonControllerFactory : extraButtonControllerFactories) {
 			IIconButtonController buttonController = buttonControllerFactory.createButtonController(recipeLayoutDrawable);
 			if (buttonController != null) {

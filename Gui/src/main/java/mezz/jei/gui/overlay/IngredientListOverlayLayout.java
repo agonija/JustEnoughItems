@@ -91,8 +91,8 @@ class IngredientListOverlayLayout {
 			if (searchAndConfigArea.getWidth() < BUTTON_SIZE || searchAndConfigArea.getHeight() < SEARCH_HEIGHT) {
 				return new SearchAndConfigAreas(ImmutableRect2i.EMPTY, ImmutableRect2i.EMPTY);
 			}
-			ImmutableRect2i searchArea = searchAndConfigArea.cropRight(BUTTON_SIZE);
-			ImmutableRect2i configButtonArea = searchAndConfigArea.keepRight(BUTTON_SIZE);
+			ImmutableRect2i searchArea = searchAndConfigArea;
+			ImmutableRect2i configButtonArea = ImmutableRect2i.EMPTY;
 			return new SearchAndConfigAreas(searchArea, configButtonArea);
 		}
 

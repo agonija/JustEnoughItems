@@ -119,7 +119,7 @@ public class BookmarkOverlay implements IRecipeFocusSource, IBookmarkOverlay {
 
 	public boolean isListDisplayed() {
 		updateScreenPropertiesIfDirty();
-		return toggleState.isBookmarkOverlayEnabled() &&
+		return false && toggleState.isBookmarkOverlayEnabled() &&
 			guiPropertiesCache.hasValidScreen() &&
 			contents.hasRoom() &&
 			!bookmarkList.isEmpty();
@@ -172,7 +172,7 @@ public class BookmarkOverlay implements IRecipeFocusSource, IBookmarkOverlay {
 		ImmutablePoint2i mouseExclusionArea = this.guiPropertiesCache.getMouseExclusionArea();
 		ImmutableRect2i availableContentsArea = displayArea.cropBottom(BUTTON_SIZE + INNER_PADDING);
 		Optional<ImmutableRect2i> historyArea = Optional.empty();
-		if (clientConfig.lookupHistoryEnabled().get() && lookupHistoryOverlay.isDisplayedOnThisSide()) {
+		if (false && lookupHistoryOverlay.isDisplayedOnThisSide()) {
 			int lookupHistoryDisplayHeight = lookupHistoryOverlay.getDisplayHeight();
 			if (lookupHistoryDisplayHeight > 0) {
 				ImmutableRect2i area = displayArea
@@ -271,8 +271,7 @@ public class BookmarkOverlay implements IRecipeFocusSource, IBookmarkOverlay {
 			this.lookupHistoryOverlay.draw(minecraft, guiGraphics, mouseX, mouseY, partialTicks);
 		}
 		if (this.guiPropertiesCache.hasValidScreen()) {
-			this.bookmarkButton.draw(guiGraphics, mouseX, mouseY, partialTicks);
-			this.historyButton.draw(guiGraphics, mouseX, mouseY, partialTicks);
+
 		}
 	}
 
@@ -338,8 +337,7 @@ public class BookmarkOverlay implements IRecipeFocusSource, IBookmarkOverlay {
 			}
 		}
 		if (this.guiPropertiesCache.hasValidScreen()) {
-			bookmarkButton.drawTooltips(guiGraphics, mouseX, mouseY);
-			historyButton.drawTooltips(guiGraphics, mouseX, mouseY);
+
 		}
 	}
 
@@ -406,8 +404,7 @@ public class BookmarkOverlay implements IRecipeFocusSource, IBookmarkOverlay {
 
 		final IUserInputHandler buttonInputHandler = new CombinedInputHandler(
 			"BookmarkOverlayButton",
-			bookmarkButtonInputHandler,
-			historyButtonInputHandler
+			NullInputHandler.INSTANCE
 		);
 
 		final IUserInputHandler displayedInputHandler = new CombinedInputHandler(

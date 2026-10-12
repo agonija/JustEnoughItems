@@ -146,7 +146,6 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 			this.contents.drawForeground(minecraft, guiGraphics, mouseX, mouseY, partialTicks);
 		}
 		if (this.controller.hasValidScreen()) {
-			this.configButton.draw(guiGraphics, mouseX, mouseY, partialTicks);
 
 		}
 		if (this.controller.hasValidScreen() && toggleState.isOverlayEnabled()) {
@@ -160,7 +159,6 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 			this.contents.drawTooltips(minecraft, guiGraphics, mouseX, mouseY);
 		}
 		if (this.controller.hasValidScreen()) {
-			this.configButton.drawTooltips(guiGraphics, mouseX, mouseY);
 		}
 		if (this.controller.hasValidScreen() && toggleState.isOverlayEnabled()) {
 			this.lookupHistoryOverlay.drawTooltips(minecraft, guiGraphics, mouseX, mouseY);
@@ -213,7 +211,6 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 		final IUserInputHandler displayedInputHandler = new CombinedInputHandler(
 			"IngredientListOverlay",
 			this.searchField.createInputHandler(),
-			this.configButton.createInputHandler(),
 			this.contents.createInputHandler()
 		);
 
@@ -222,9 +219,6 @@ public class IngredientListOverlay implements IIngredientListOverlay, IRecipeFoc
 		return new ProxyInputHandler(() -> {
 			if (isListDisplayed()) {
 				return displayedInputHandler;
-			}
-			if (this.controller.hasValidScreen()) {
-				return configButtonInputHandler;
 			}
 			return NullInputHandler.INSTANCE;
 		});
